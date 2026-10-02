@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Moje osoby</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            margin: auto;
+            padding: 25px 15px;
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-top: 0;
+        }
+
+        .search {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            font-size: 16px;
+            margin: 20px 0 12px;
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 13px 18px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .add-button {
+            width: 100%;
+            background: #2563eb;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .person {
+            width: 100%;
+            background: white;
+            padding: 18px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .person:hover {
+            background: #f9fafb;
+        }
+
+        .person-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .arrow {
+            color: #9ca3af;
+            font-size: 22px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #6b7280;
+            margin-top: 40px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .modal-content input,
+        .modal-content textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            margin-bottom: 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .modal-content textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .save {
+            background: #2563eb;
+            color: white;
+        }
+
+        .cancel {
+            background: #e5e7eb;
+            margin-left: 8px;
+        }
+
+        .delete {
+            background: #dc2626;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .show-description {
+            background: #111827;
+            color: white;
+            margin-top: 20px;
+        }
+
+        .description-box {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            line-height: 1.6;
+        }
+
+        .date-box {
+            margin-bottom: 12px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .description-text {
+            white-space: pre-wrap;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Moje osoby</h1>
+
+    <p class="subtitle">
+        Prywatna baza osób
+    </p>
+
+    <input
+        id="search"
+        class="search"
+        type="text"
+        placeholder="Szukaj osoby..."
+    >
+
+    <button
+        class="add-button"
+        onclick="openAdd()"
+    >
+        + Dodaj osobę
+    </button>
+
+    <div id="peopleList"></div>
+
+</div>
+
+
+<!-- DODAWANIE / EDYCJA -->
+
+<div id="formModal" class="modal">
+
+    <div class="modal-content">
+
+        <h2 id="formTitle">
+            Dodaj osobę
+        </h2>
+
+        <label>Imię</label>
+
+        <input
+            id="firstName"
+            type="text"
+        >
+
+        <label>Nazwisko</label>
+
+        <input
+            id="lastName"
+            type="text"
+        >
+
+        <label>Data</label>
+
+        <input
+            id="date"
+            type="date"
+        >
+
+        <label>Opis</label>
+
+        <textarea
+            id="description"
+            placeholder="Wpisz opis..."
+        ></textarea>
+
+        <button
+            class="save"
+            onclick="savePerson()"
+        >
+            Zapisz
+        </button>
+
+        <button
+            class="cancel"
+            onclick="closeForm()"
+        >
+            Anuluj
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- OSOBA -->
+
+<div id="detailsModal" class="modal">
+
+    <div class="modal-content">
+
+        <h2 id="detailsName"></h2>
+
+        <button
+            id="showDescriptionButton"
+            class="show-description"
+            onclick="showDescription()"
+        >
+            📄 Pokaż opis
+        </button>
+
+        <div
+            id="detailsDescription"
+            class="description-box"
+        ></div>
+
+        <br>
+
+        <button
+            class="save"
+            onclick="editPerson()"
+        >
+            Edytuj
+        </button>
+
+        <button
+            class="delete"
+            onclick="deletePerson()"
+        >
+            Usuń
+        </button>
+
+        <button
+            class="cancel"
+            onclick="closeDetails()"
+        >
+            Zamknij
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let people =
+    JSON.parse(
+        localStorage.getItem("people") || "[]"
+    );
+
+let selectedPerson = null;
+
+const search =
+    document.getElementById("search");
+
+
+search.addEventListener(
+    "input",
+    showPeople
+);
+
+
+function saveData() {
+
+    localStorage.setItem(
+        "people",
+        JSON.stringify(people)
+    );
+
+}
+
+
+function showPeople() {
+
+    const list =
+        document.getElementById("peopleList");
+
+    const query =
+        search.value
+            .toLowerCase()
+            .trim();
+
+    list.innerHTML = "";
+
+
+    const results =
+        people.filter(person => {
+
+            const name =
+                person.firstName +
+                " " +
+                person.lastName;
+
+            return name
+                .toLowerCase()
+                .includes(query);
+
+        });
+
+
+    if (results.length === 0) {
+
+        list.innerHTML =
+            '<div class="empty">Nie znaleziono osoby.</div>';
+
+        return;
+
+    }
+
+
+    results.forEach(person => {
+
+        const element =
+            document.createElement("div");
+
+        element.className = "person";
+
+
+        element.onclick = function() {
+
+            openDetails(person);
+
+        };
+
+
+        element.innerHTML = `
+
+            <div class="person-name">
+                ${escapeHtml(person.firstName)}
+                ${escapeHtml(person.lastName)}
+            </div>
+
+            <div class="arrow">
+                ›
+            </div>
+
+        `;
+
+
+        list.appendChild(element);
+
+    });
+
+}
+
+
+function openAdd() {
+
+    selectedPerson = null;
+
+    document.getElementById(
+        "formTitle"
+    ).innerText = "Dodaj osobę";
+
+
+    document.getElementById(
+        "firstName"
+    ).value = "";
+
+
+    document.getElementById(
+        "lastName"
+    ).value = "";
+
+
+    document.getElementById(
+        "date"
+    ).value = "";
+
+
+    document.getElementById(
+        "description"
+    ).value = "";
+
+
+    document.getElementById(
+        "formModal"
+    ).style.display = "flex";
+
+}
+
+
+function savePerson() {
+
+    const firstName =
+        document
+            .getElementById("firstName")
+            .value
+            .trim();
+
+
+    const lastName =
+        document
+            .getElementById("lastName")
+            .value
+            .trim();
+
+
+    const date =
+        document
+            .getElementById("date")
+            .value;
+
+
+    const description =
+        document
+            .getElementById("description")
+            .value
+            .trim();
+
+
+    if (!firstName || !lastName) {
+
+        alert(
+            "Wpisz imię i nazwisko."
+        );
+
+        return;
+
+    }
+
+
+    if (selectedPerson) {
+
+        selectedPerson.firstName =
+            firstName;
+
+        selectedPerson.lastName =
+            lastName;
+
+        selectedPerson.date =
+            date;
+
+        selectedPerson.description =
+            description;
+
+    }
+
+    else {
+
+        people.push({
+
+            id: Date.now(),
+
+            firstName:
+                firstName,
+
+            lastName:
+                lastName,
+
+            date:
+                date,
+
+            description:
+                description
+
+        });
+
+    }
+
+
+    saveData();
+
+    closeForm();
+
+    showPeople();
+
+}
+
+
+function closeForm() {
+
+    document.getElementById(
+        "formModal"
+    ).style.display = "none";
+
+}
+
+
+function openDetails(person) {
+
+    selectedPerson = person;
+
+
+    document.getElementById(
+        "detailsName"
+    ).innerText =
+        person.firstName +
+        " " +
+        person.lastName;
+
+
+    document.getElementById(
+        "detailsDescription"
+    ).innerHTML = "";
+
+
+    document.getElementById(
+        "detailsDescription"
+    ).style.display = "none";
+
+
+    document.getElementById(
+        "showDescriptionButton"
+    ).style.display = "block";
+
+
+    document.getElementById(
+        "detailsModal"
+    ).style.display = "flex";
+
+}
+
+
+function showDescription() {
+
+    const box =
+        document.getElementById(
+            "detailsDescription"
+        );
+
+
+    const dateText =
+        selectedPerson.date
+            ? formatDate(selectedPerson.date)
+            : "Brak daty";
+
+
+    box.innerHTML = `
+
+        <div class="date-box">
+            📅 <strong>Data:</strong>
+            ${escapeHtml(dateText)}
+        </div>
+
+        <div class="description-text">
+            ${escapeHtml(
+                selectedPerson.description ||
+                "Brak opisu."
+            )}
+        </div>
+
+    `;
+
+
+    box.style.display = "block";
+
+
+    document.getElementById(
+        "showDescriptionButton"
+    ).style.display = "none";
+
+}
+
+
+function formatDate(date) {
+
+    const parts =
+        date.split("-");
+
+
+    if (parts.length !== 3) {
+        return date;
+    }
+
+
+    return (
+        parts[2] +
+        "." +
+        parts[1] +
+        "." +
+        parts[0]
+    );
+
+}
+
+
+function closeDetails() {
+
+    document.getElementById(
+        "detailsModal"
+    ).style.display = "none";
+
+}
+
+
+function editPerson() {
+
+    closeDetails();
+
+
+    document.getElementById(
+        "formTitle"
+    ).innerText =
+        "Edytuj osobę";
+
+
+    document.getElementById(
+        "firstName"
+    ).value =
+        selectedPerson.firstName;
+
+
+    document.getElementById(
+        "lastName"
+    ).value =
+        selectedPerson.lastName;
+
+
+    document.getElementById(
+        "date"
+    ).value =
+        selectedPerson.date || "";
+
+
+    document.getElementById(
+        "description"
+    ).value =
+        selectedPerson.description;
+
+
+    document.getElementById(
+        "formModal"
+    ).style.display = "flex";
+
+}
+
+
+function deletePerson() {
+
+    if (
+        !confirm(
+            "Czy na pewno chcesz usunąć tę osobę?"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    people =
+        people.filter(
+            person =>
+                person.id !==
+                selectedPerson.id
+        );
+
+
+    saveData();
+
+    closeDetails();
+
+    showPeople();
+
+}
+
+
+function escapeHtml(text) {
+
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+}
+
+
+showPeople();
+
+</script>
+
+</body>
+</html>
